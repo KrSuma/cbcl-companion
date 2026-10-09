@@ -97,7 +97,7 @@ cbcl eval
 cbcl eval --model claude-sonnet-5-5
 cbcl eval --model claude-haiku-5-5
 
-# 8. 데모 UI (로컬)
+# 8. 데모 UI (로컬). 탭: 원본 보고서 → 쉬운 말 해설 → 상담 전 질문 챗봇 → 내부 공유용
 streamlit run app/streamlit_app.py
 
 # 9. Heroku 배포 (Procfile, .python-version, requirements.txt 포함)
@@ -213,7 +213,7 @@ src/cbcl_companion/
   evaluate.py   가드레일 평가 러너 (부정문 인식 검사, 심사, 비용 집계)
   cost.py       가격표, usage → USD
   cli.py        CLI: cbcl facts / explain / chat / eval
-app/streamlit_app.py    데모 UI: 해설 탭, 대화 탭, facts 탭, PDF 업로드
+app/streamlit_app.py    데모 UI: 원본 보고서 · 쉬운 말 해설 · 상담 전 질문 챗봇 · 내부 공유용(상담사 메모, 비용, LLM 입력 facts) 탭, PDF 업로드
 data/sample_report.json 샘플 보고서를 데이터로 옮긴 것 (점수는 제공된 가상 보고서 그대로, 이름·검사일·보호자 의견은 합성)
 eval/cases.jsonl        26개 평가 케이스
 eval/results/           모델별 평가 결과 JSON (2026-10-08)
