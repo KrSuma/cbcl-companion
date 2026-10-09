@@ -1,0 +1,20 @@
+# secrets
+.env
+*.key
+
+# confidential source material (assignment PDFs) - never commit
+document/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+dist/
+build/
+
+# generated outputs
+outputs/
+.streamlit/secrets.toml
+.DS_Store

@@ -1,0 +1,28 @@
+[project]
+name = "cbcl-companion"
+version = "0.1.0"
+description = "Parent-friendly companion for K-CBCL reports: plain-language guide + pre-consultation Q&A with clinical guardrails"
+requires-python = ">=3.11"
+dependencies = [
+    "anthropic>=1.0",
+    "pydantic>=2.0",
+    "python-dotenv>=1.0",
+    "pypdf>=4.0",
+]
+
+[project.optional-dependencies]
+app = ["streamlit>=1.30"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+cbcl = "cbcl_companion.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

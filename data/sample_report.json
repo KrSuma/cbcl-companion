@@ -1,0 +1,96 @@
+{
+  "child": {
+    "name": "김하람",
+    "sex": "남",
+    "age_label": "만 7세 3개월",
+    "norm_group": "남자 4–11세",
+    "test_date": "2026-04-07"
+  },
+  "composites": [
+    {
+      "key": "internalizing",
+      "label": "내재화 문제",
+      "t": 61,
+      "components": "위축+신체증상+우울/불안"
+    },
+    {
+      "key": "externalizing",
+      "label": "외현화 문제",
+      "t": 54,
+      "components": "비행+공격성"
+    },
+    {
+      "key": "total",
+      "label": "총 문제행동",
+      "t": 58,
+      "components": "전체 117문항"
+    }
+  ],
+  "syndromes": [
+    {
+      "key": "withdrawn",
+      "label": "위축",
+      "group": "내재화",
+      "t": 60,
+      "items": 9
+    },
+    {
+      "key": "somatic",
+      "label": "신체증상",
+      "group": "내재화",
+      "t": 55,
+      "items": 9
+    },
+    {
+      "key": "anxious_depressed",
+      "label": "우울/불안",
+      "group": "내재화",
+      "t": 63,
+      "items": 14
+    },
+    {
+      "key": "social_immaturity",
+      "label": "사회적 미성숙",
+      "group": "혼합",
+      "t": 62,
+      "items": 8
+    },
+    {
+      "key": "thought",
+      "label": "사고의 문제",
+      "group": "혼합",
+      "t": 57,
+      "items": 7
+    },
+    {
+      "key": "attention",
+      "label": "주의집중 문제",
+      "group": "혼합",
+      "t": 66,
+      "items": 11
+    },
+    {
+      "key": "delinquent",
+      "label": "비행",
+      "group": "외현화",
+      "t": 52,
+      "items": 13
+    },
+    {
+      "key": "aggressive",
+      "label": "공격성",
+      "group": "외현화",
+      "t": 50,
+      "items": 20
+    }
+  ],
+  "not_administered": [
+    "사회능력 척도",
+    "정서불안정 척도",
+    "성문제 척도"
+  ],
+  "parent_comments": [
+    "집에서는 별다른 어려움이 없는데, 담임 선생님께 수업 중에 산만하다는 말을 몇 번 들었어요.",
+    "또래 친구들과 어울리는 걸 어려워하는 것 같습니다."
+  ]
+}
