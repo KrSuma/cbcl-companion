@@ -33,12 +33,29 @@ class SyndromeScore(BaseModel):
     items: int = 0
 
 
+class Observation(BaseModel):
+    title: str                      # e.g. "주의집중 문제 · T = 66"
+    tag: str                        # e.g. "개별척도 준임상 (60–69T)"
+    points: list[str] = Field(default_factory=list)
+
+
+class Narrative(BaseModel):
+    """The report's clinician-written prose. Shown on the 원본 보고서 tab only; the pipeline never reads it."""
+    social_competence_note: Optional[str] = None
+    composite_summary: Optional[str] = None
+    special_scales: list[str] = Field(default_factory=list)
+    observations: list[Observation] = Field(default_factory=list)
+    interpretation: list[str] = Field(default_factory=list)
+    caveats: list[str] = Field(default_factory=list)
+
+
 class ReportData(BaseModel):
     child: Child
     composites: list[CompositeScore]
     syndromes: list[SyndromeScore]
     not_administered: list[str] = Field(default_factory=list)
     parent_comments: list[str] = Field(default_factory=list)
+    narrative: Optional[Narrative] = None
 
 
 # ---------- Derived: facts the rules layer hands to the LLM ----------

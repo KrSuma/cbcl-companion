@@ -43,3 +43,16 @@ def test_parent_comment_linking_is_keyword_based():
 def test_percentile_note():
     assert "95" in percentile_note(66)
     assert "85" in percentile_note(60)
+
+
+def test_sample_json_carries_the_report_narrative():
+    r = load_report(SAMPLE)
+    n = r.narrative
+    assert n is not None
+    assert len(n.observations) == 5 and n.observations[1].title == "주의집중 문제 · T = 66"
+    assert len(n.interpretation) == 3 and len(n.caveats) == 5 and len(n.special_scales) == 2
+    # wrapped lines were re-joined correctly
+    assert "대상 아동의 경우 추후" in n.social_competence_note
+    assert any("유의미한 수준이 아닙니다" in p for p in n.interpretation)
+    assert any("주기적 재평가가 권장됩니다" in p for p in n.interpretation)
+    assert any("병행 실시가 권장됩니다" in c for c in n.caveats)
