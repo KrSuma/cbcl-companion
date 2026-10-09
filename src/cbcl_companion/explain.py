@@ -64,6 +64,11 @@ def template_guide(facts: Facts) -> ParentGuide:
             "임상 범위: 전문가의 개입을 고려하는 범위입니다.",
         ],
         overall_picture=[f"{c.label}: {c.band} 범위 (T={c.t})" for c in facts.composites],
+        not_needed=[
+            "이 검사는 양육을 평가하는 검사가 아닙니다. 보호자께서 보신 아이의 모습을 또래와 비교한 것입니다.",
+            "아이에게 결과를 물어보거나 설명하지 않으셔도 됩니다.",
+            "상담 전에 집에서 무언가를 바꾸실 필요는 없습니다. 평소 모습을 메모해 두시는 것으로 충분합니다.",
+        ],
         flagged_scales=flagged,
         normal_scales_note=", ".join(s.label for s in facts.syndromes_normal) + ".",
         not_administered_note=("이번에 실시되지 않은 검사: " + ", ".join(facts.not_administered) + ". 결과가 나빠서 빠진 것이 아니라 아직 검사하지 않은 것입니다.") if facts.not_administered else "",
@@ -86,6 +91,8 @@ def render_markdown(guide: ParentGuide, facts: Facts) -> str:
     out.append(f"### 이 검사는 무엇이고, 무엇이 아닌가요\n\n{guide.what_this_test_is}\n")
     out.append("### 용어 풀이\n\n" + "\n".join(f"- {g}" for g in guide.glossary) + "\n")
     out.append("### 한눈에 보는 결과\n\n" + "\n".join(f"- {o}" for o in guide.overall_picture) + "\n")
+    if guide.not_needed:
+        out.append("### 하지 않아도 되는 것\n\n" + "\n".join(f"- {n}" for n in guide.not_needed) + "\n")
     if guide.flagged_scales:
         title = "자세히 살펴볼 영역" if facts.any_clinical else "조금 더 지켜볼 영역"
         out.append(f"### {title} {len(guide.flagged_scales)}가지\n")

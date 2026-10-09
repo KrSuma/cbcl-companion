@@ -101,6 +101,7 @@ class ParentGuide(BaseModel):
     what_this_test_is: str = Field(description="검사가 무엇이고 무엇이 아닌지. 2~3문장.")
     glossary: list[str] = Field(description="T점수, 준임상 등 용어 풀이. 각 항목 1~2문장.")
     overall_picture: list[str] = Field(description="종합 지표 3개를 한 줄씩 쉬운 말로.")
+    not_needed: list[str] = Field(description="'하지 않아도 되는 것' 2~3개. 이 검사가 무엇이 아닌지에 대한 사실만: 양육을 평가하지 않음, 아이에게 결과를 캐묻지 않아도 됨, 상담 전 집에서 바꿔야 할 것 없음. 원인 언급 금지.")
     flagged_scales: list[ScaleExplanation] = Field(description="준임상/임상 척도별 설명. facts 순서대로.")
     normal_scales_note: str = Field(description="정상 범위 척도들을 한 문장으로.")
     not_administered_note: str = Field(description="미실시 척도 안내. 결과가 나빠서 빠진 게 아님을 명시.")
@@ -174,3 +175,5 @@ class HandoffNote(BaseModel):
     entries: list[HandoffEntry]
     themes: list[str]
     not_administered_mentioned: bool
+    anxiety_before: Optional[int] = None   # 1~5, 원본 보고서를 본 직후
+    anxiety_after: Optional[int] = None    # 1~5, 쉬운 말 해설을 읽은 후

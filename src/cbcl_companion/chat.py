@@ -39,6 +39,7 @@ class ChatSession:
         self.entries: list[HandoffEntry] = []  # counselor handoff
         self.transcript: list[tuple[str, str]] = []
         self.crisis_flagged = False
+        self.ratings: dict[str, int | None] = {"before": None, "after": None}
         facts_json = json.dumps(facts.model_dump(), ensure_ascii=False, sort_keys=True)
         # Stable prefix: system prompt + facts, both cached across turns.
         self._system = [
@@ -115,6 +116,8 @@ class ChatSession:
             entries=list(self.entries),
             themes=themes,
             not_administered_mentioned=any("미실시" in r or "실시되지 않" in r for _, r in self.transcript),
+            anxiety_before=self.ratings.get("before"),
+            anxiety_after=self.ratings.get("after"),
         )
 
 
@@ -122,8 +125,12 @@ def render_handoff(note: HandoffNote) -> str:
     lines = [
         f"[상담 전 보호자 메모] {note.child_name} / {note.child_sex} / {note.child_age} / 검사일 {note.test_date}",
         f"보고서 요약: {note.report_summary}",
-        "보호자가 물어본 질문:",
     ]
+    if note.anxiety_before is not None or note.anxiety_after is not None:
+        b = f"{note.anxiety_before}/5" if note.anxiety_before is not None else "미응답"
+        a = f"{note.anxiety_after}/5" if note.anxiety_after is not None else "미응답"
+        lines.append(f"보호자 걱정 자가 평정: 원본 보고서 직후 {b} → 해설 읽은 후 {a}")
+    lines.append("보호자가 물어본 질문:")
     if not note.entries:
         lines.append("  (상담사 전달이 필요한 질문 없음)")
     for i, e in enumerate(note.entries, 1):

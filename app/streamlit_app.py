@@ -158,6 +158,18 @@ div[class*="st-key-chat_fab"] button:hover{background:#111827 !important;color:#
 """
 
 
+SUGGESTED = ["준임상이 무슨 뜻이에요?", "상담 전까지 집에서 뭘 하면 좋을까요?", "상담 때 뭘 물어보면 좋을까요?"]
+
+
+def anxiety_rating(session: ChatSession, when: str, prompt: str) -> None:
+    """One-question self-rating (1~5). Stored on the session and shown in the counselor memo."""
+    st.markdown("---")
+    choice = st.radio(prompt, [1, 2, 3, 4, 5], index=None, horizontal=True, key=f"rating_{when}",
+                      captions=["거의 없음", "", "", "", "매우 큼"])
+    if choice is not None:
+        session.ratings[when] = int(choice)
+
+
 def floating_chat(session: ChatSession) -> None:
     """A floating 질문하기 button that opens the same chat the chatbot tab uses."""
     st.markdown(FAB_CSS, unsafe_allow_html=True)
@@ -166,7 +178,12 @@ def floating_chat(session: ChatSession) -> None:
             st.markdown("**상담 전 질문 챗봇** · 보고서 내용 안에서 답하고, 진단·치료 질문은 상담사에게 전달합니다.")
             recent = session.transcript[-3:]
             if not recent:
-                st.caption("예: 준임상이 무슨 뜻이에요? / 주의집중이 95%면 ADHD 아니에요?")
+                st.caption("이런 질문부터 시작해 보세요")
+                for i, q in enumerate(SUGGESTED):
+                    if st.button(q, key=f"chip_{i}", use_container_width=True):
+                        with st.spinner("..."):
+                            session.ask(q)
+                        st.rerun()
             for q, a in recent:
                 st.markdown(f"**보호자:** {q}")
                 st.markdown(f"**도우미:** {a}")
@@ -183,6 +200,7 @@ tab_r, tab_a, tab_b, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "
 
 with tab_r:
     render_original_report(report, uploaded_pdf)
+    anxiety_rating(session, "before", "보고서를 보신 지금, 얼마나 걱정되시나요?")
 
 with tab_a:
     st.subheader(f"{facts.child_name} · {facts.child_sex} · {facts.child_age} · 검사일 {facts.test_date}")
@@ -196,6 +214,7 @@ with tab_a:
         with st.expander(f"검증 결과 (source: {source})"):
             st.code(report_g.summary() if report_g else "template: deterministic, no judge")
             st.code(llm.tracker.table())
+        anxiety_rating(session, "after", "해설을 읽으신 지금, 얼마나 걱정되시나요?")
     floating_chat(session)
 
 with tab_b:

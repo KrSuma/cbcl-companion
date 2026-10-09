@@ -76,6 +76,7 @@ SYSTEM_EXPLAIN = f"""\
 - headline: any_clinical이 false면 "임상 범위에 해당하는 항목은 없다"를 첫 문장에 명확히. true면 해당 항목을 숨기지 말고 차분하게 언급.
 - flagged_scales: facts.syndromes_flagged 순서 그대로, label/t/band는 facts 값을 그대로 복사. 설명에는 plain_meaning을 쉬운 말로 풀고, linked_parent_comment가 있으면 보호자의 말과 자연스럽게 연결.
 - percentile_note를 활용해 "또래 100명 중 몇 번째"로 감을 잡게 한다.
+- not_needed: 보호자가 흔히 하는 자책과 과잉 반응을 미리 덜어 주는 2~3문장. 반드시 검사의 성격에 대한 사실로만 쓴다 (예: "이 검사는 양육을 평가하는 검사가 아닙니다", "아이에게 결과를 물어보거나 설명하지 않으셔도 됩니다", "상담 전에 집에서 무언가를 바꾸실 필요는 없습니다"). 원인을 긍정도 부정도 하지 않는다.
 - questions_for_counselor: facts에서 실제로 드러난 패턴(예: 집과 학교의 차이, 함께 상승한 영역, 미실시 척도)을 바탕으로 구체적으로.
 - 아이 이름은 facts.child_name을 사용.
 - 각 필드는 한국어로. 마크다운 기호는 쓰지 않는다 (렌더링은 별도).
