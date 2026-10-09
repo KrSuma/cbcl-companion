@@ -63,8 +63,8 @@ _TAG_SPLIT = re.compile(r"(<[^>]+>)")
 
 TOOLTIP_CSS = """
 <style>
-.kt{background:#fef08a;border-radius:3px;padding:0 .15em;cursor:help;position:relative}
-.kt:hover{background:#fde047}
+.kt{border-bottom:2px dotted #b45309;cursor:help;position:relative}
+.kt:hover{border-bottom-color:#1f2937}
 .kt:hover::after{content:attr(data-tip);position:absolute;left:0;top:1.6em;z-index:50;
   background:#1f2937;color:#fff;padding:.7em .9em;border-radius:8px;font-size:.88em;font-weight:400;
   line-height:1.55;width:max-content;max-width:26em;white-space:normal;box-shadow:0 6px 18px rgba(0,0,0,.28)}
