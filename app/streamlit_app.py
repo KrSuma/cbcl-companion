@@ -140,6 +140,42 @@ if "llm" not in st.session_state:
     st.session_state.llm = LLM(Settings())
 llm: LLM = st.session_state.llm
 
+if "session" not in st.session_state or st.session_state.get("session_child") != facts.child_name:
+    st.session_state.session = ChatSession(facts, llm)
+    st.session_state.session_child = facts.child_name
+session: ChatSession = st.session_state.session
+
+FAB_CSS = """
+<style>
+.st-key-chat_fab{position:fixed;bottom:28px;right:28px;z-index:1000}
+.st-key-chat_fab button[data-testid="stPopoverButton"]{border-radius:999px;padding:.6em 1.1em;
+  box-shadow:0 6px 18px rgba(0,0,0,.25);background:#1f2937;color:#fff;border:none;font-weight:600}
+.st-key-chat_fab button[data-testid="stPopoverButton"]:hover{background:#111827;color:#fff}
+</style>
+"""
+
+
+def floating_chat(session: ChatSession) -> None:
+    """A floating 질문하기 button that opens the same chat the chatbot tab uses."""
+    st.markdown(FAB_CSS, unsafe_allow_html=True)
+    with st.container(key="chat_fab"):
+        with st.popover("💬 궁금한 점 물어보기"):
+            st.markdown("**상담 전 질문 챗봇** · 보고서 내용 안에서 답하고, 진단·치료 질문은 상담사에게 전달합니다.")
+            recent = session.transcript[-3:]
+            if not recent:
+                st.caption("예: 준임상이 무슨 뜻이에요? / 주의집중이 95%면 ADHD 아니에요?")
+            for q, a in recent:
+                st.markdown(f"**보호자:** {q}")
+                st.markdown(f"**도우미:** {a}")
+            with st.form("fab_form", clear_on_submit=True, border=False):
+                q = st.text_input("질문", placeholder="궁금한 점을 적어 주세요", label_visibility="collapsed")
+                sent = st.form_submit_button("보내기", use_container_width=True)
+            if sent and q.strip():
+                with st.spinner("..."):
+                    session.ask(q.strip())
+                st.rerun()
+
+
 tab_r, tab_a, tab_b, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용"])
 
 with tab_r:
@@ -157,12 +193,9 @@ with tab_a:
         with st.expander(f"검증 결과 (source: {source})"):
             st.code(report_g.summary() if report_g else "template: deterministic, no judge")
             st.code(llm.tracker.table())
+    floating_chat(session)
 
 with tab_b:
-    if "session" not in st.session_state or st.session_state.get("session_child") != facts.child_name:
-        st.session_state.session = ChatSession(facts, llm)
-        st.session_state.session_child = facts.child_name
-    session: ChatSession = st.session_state.session
     for q, a in session.transcript:
         st.chat_message("user").write(q)
         st.chat_message("assistant").write(a)
@@ -177,7 +210,6 @@ with tab_b:
 with tab_i:
     st.caption("보호자에게는 보이지 않는 화면. 상담사와 운영팀이 봅니다.")
     st.subheader("상담사 전달 메모 (자동 생성)")
-    session: ChatSession = st.session_state.get("session") or ChatSession(facts, llm)
     st.code(render_handoff(session.handoff_note()))
     st.subheader("사용량/비용")
     st.code(llm.tracker.table())
