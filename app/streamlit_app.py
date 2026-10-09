@@ -15,6 +15,7 @@ from cbcl_companion.llm import LLM, Settings
 from cbcl_companion.parser import load_report
 from cbcl_companion.glossary import TOOLTIP_CSS, wrap_terms
 from cbcl_companion.rules import build_facts, composite_band, syndrome_band
+from cbcl_companion.visuals import band_badge_html, band_chart, people_grid_html
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -98,7 +99,13 @@ def render_original_report(report, pdf_path):
         st.pdf(str(pdf_path))
 
 
-st.set_page_config(page_title="아맘때 검사 결과 안내 도우미", page_icon="🧩", layout="wide")
+st.set_page_config(page_title="아맘때 검사 결과 안내 도우미", page_icon="🧩", layout="centered")
+st.markdown("""
+<style>
+.block-container{max-width:960px !important;padding-top:2.2rem !important;padding-left:2rem !important;padding-right:2rem !important}
+div[data-testid="stMarkdownContainer"] p, div[data-testid="stMarkdownContainer"] li{line-height:1.7}
+</style>
+""", unsafe_allow_html=True)
 
 # Optional access gate for public deployments: set APP_PASSWORD to require it.
 _required = os.getenv("APP_PASSWORD")
@@ -177,40 +184,70 @@ def _esc(text: str) -> str:
     return text.replace("~", "\\~")
 
 
-def floating_chat(session: ChatSession) -> None:
-    """A floating 질문하기 button that opens the same chat the chatbot tab uses."""
+def floating_chat(session: ChatSession, scope: str) -> None:
+    """A floating 질문하기 button. One shared session, rendered on each reader tab with scoped keys."""
     st.markdown(FAB_CSS, unsafe_allow_html=True)
-    with st.container(key="chat_fab"):
+    with st.container(key=f"chat_fab_{scope}"):
         with st.popover("💬 궁금한 점 물어보기"):
             st.markdown("**상담 전 질문 챗봇** · 보고서 내용 안에서 답하고, 진단·치료 질문은 상담사에게 전달합니다.")
-            recent = session.transcript[-3:]
+            recent = session.transcript[-4:]
             if not recent:
                 st.caption("이런 질문부터 시작해 보세요")
                 for i, q in enumerate(SUGGESTED):
-                    if st.button(q, key=f"chip_{i}", use_container_width=True):
+                    if st.button(q, key=f"chip_{scope}_{i}", width='stretch'):
                         with st.spinner("..."):
                             session.ask(q)
                         st.rerun()
             for q, a in recent:
                 st.markdown(f"**보호자:** {_esc(q)}")
                 st.markdown(f"**도우미:** {_esc(a)}")
-            with st.form("fab_form", clear_on_submit=True, border=False):
+            with st.form(f"fab_form_{scope}", clear_on_submit=True, border=False):
                 q = st.text_input("질문", placeholder="궁금한 점을 적어 주세요", label_visibility="collapsed")
-                sent = st.form_submit_button("보내기", use_container_width=True)
+                sent = st.form_submit_button("보내기", width='stretch')
             if sent and q.strip():
                 with st.spinner("..."):
                     session.ask(q.strip())
                 st.rerun()
 
 
-tab_r, tab_a, tab_b, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "대화 기록", "내부 공유용"])
+def render_visual_summary(facts) -> None:
+    """Charts drawn from the rules-layer facts. No model output here."""
+    st.markdown("#### 한눈에 보는 결과")
+    cols = st.columns(len(facts.composites))
+    for col, c in zip(cols, facts.composites):
+        with col:
+            st.markdown(
+                f"<div style='border:1px solid #e5e7eb;border-radius:12px;padding:.9em 1em'>"
+                f"<div style='color:#6b7280;font-size:.85em'>{c.label}</div>"
+                f"<div style='font-size:2.1em;font-weight:700;line-height:1.1;margin:.1em 0'>{c.t}<span style='font-size:.45em;color:#9ca3af'> T</span></div>"
+                f"{band_badge_html(c.band)}"
+                f"<div style='color:#4b5563;font-size:.85em;margin-top:.6em'>{c.plain_meaning}</div></div>",
+                unsafe_allow_html=True,
+            )
+    st.markdown("")
+    st.markdown("**종합 지표** · 60점부터 준임상, 63점부터 임상")
+    st.altair_chart(band_chart(facts.composites, "composite"), width='stretch')
+    syndromes = facts.syndromes_flagged + facts.syndromes_normal
+    st.markdown("**개별 척도** · 60점부터 준임상, 70점부터 임상")
+    st.altair_chart(band_chart(syndromes, "syndrome"), width='stretch')
+    st.caption("점선은 또래 평균(50점). 막대가 초록 안에 있으면 또래와 비슷한 수준, 노랑이면 조금 더 지켜볼 영역, 빨강이면 상담에서 자세히 다룰 영역")
+    focus = facts.highest_syndrome
+    if focus and focus.t >= 50:
+        st.markdown(f"**가장 높게 나온 영역 · {focus.label}** · 또래 100명 중 어디쯤일까요?")
+        st.markdown(people_grid_html(focus), unsafe_allow_html=True)
+
+
+tab_r, tab_a, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "내부 공유용"])
 
 with tab_r:
     render_original_report(report, uploaded_pdf)
     anxiety_rating(session, "before", "보고서를 보신 지금, 얼마나 걱정되시나요?")
+    floating_chat(session, "r")
 
 with tab_a:
     st.subheader(f"{facts.child_name} · {facts.child_sex} · {facts.child_age} · 검사일 {facts.test_date}")
+    render_visual_summary(facts)
+    st.markdown("---")
     if st.button("해설 생성", type="primary"):
         with st.spinner("생성 중..."):
             guide, report_g, source = generate_guide(facts, llm)
@@ -222,27 +259,7 @@ with tab_a:
             st.code(report_g.summary() if report_g else "template: deterministic, no judge")
             st.code(llm.tracker.table())
         anxiety_rating(session, "after", "해설을 읽으신 지금, 얼마나 걱정되시나요?")
-    floating_chat(session)
-
-with tab_b:
-    if not session.transcript:
-        st.caption("아직 나눈 대화가 없습니다. 이런 질문부터 시작해 보세요.")
-        cols = st.columns(len(SUGGESTED))
-        for i, (col, q) in enumerate(zip(cols, SUGGESTED)):
-            if col.button(q, key=f"tab_chip_{i}", use_container_width=True):
-                with st.spinner("..."):
-                    session.ask(q)
-                st.rerun()
-    for q, a in session.transcript:
-        st.chat_message("user").write(_esc(q))
-        st.chat_message("assistant").write(_esc(a))
-    q = st.chat_input("궁금한 점을 물어보세요 (예: 준임상이 무슨 뜻이에요?)")
-    if q:
-        st.chat_message("user").write(q)
-        with st.spinner("..."):
-            turn = session.ask(q)
-        st.chat_message("assistant").write(_esc(turn.reply))
-        st.caption(f"{turn.category} · 불안 {turn.anxiety_level} · 상담사 전달 {'예' if turn.log_for_counselor else '아니오'}")
+    floating_chat(session, "a")
 
 with tab_i:
     st.caption("보호자에게는 보이지 않는 화면. 상담사와 운영팀이 봅니다.")
