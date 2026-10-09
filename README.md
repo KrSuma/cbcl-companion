@@ -120,9 +120,10 @@ Anthropic Claude API, Python SDK `anthropic`, Messages API + 구조화 출력(`m
 src/cbcl_companion/
   rules.py, prompts.py            임계값·백분위·쉬운 말 앵커(facts를 만드는 유일한 곳), 임상 경계, 금지어, ECHO_GROUPS, 위기 패턴
   explain.py, chat.py, guard.py   해설 생성·템플릿 폴백, 대화 세션·위기 사전검사·상담사 메모, 가드 3단계
+  glossary.py                     원본 보고서 탭의 용어 풀이(고정 사전, 해설과 같은 앵커)
   parser.py, llm.py, cost.py      JSON 로더 + PDF 파서(점수와 임상 서술까지 추출, 서술은 원본 보고서 탭 표시 전용), Anthropic 클라이언트 래퍼, 가격표
   evaluate.py, cli.py             평가 러너, CLI
-app/streamlit_app.py      데모 UI (원본 보고서 탭은 보고서 전문을 그대로 재현, 쉬운 말 해설 탭이 그 번역)
+app/streamlit_app.py      데모 UI (원본 보고서 탭은 보고서 전문을 그대로 재현하고 전문 용어에 마우스를 올리면 쉬운 말 풀이가 뜸. 쉬운 말 해설 탭이 그 번역)
 data/sample_report.json   제공된 샘플 보고서(가상 인물)를 PDF 파서로 그대로 옮긴 것
 eval/cases.jsonl, eval/results/   26개 평가 케이스, 모델별 결과 JSON
 tests/                    API 없이 도는 단위 테스트
