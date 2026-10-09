@@ -203,7 +203,7 @@ def floating_chat(session: ChatSession) -> None:
                 st.rerun()
 
 
-tab_r, tab_a, tab_b, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용"])
+tab_r, tab_a, tab_b, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "대화 기록", "내부 공유용"])
 
 with tab_r:
     render_original_report(report, uploaded_pdf)
@@ -225,6 +225,14 @@ with tab_a:
     floating_chat(session)
 
 with tab_b:
+    if not session.transcript:
+        st.caption("아직 나눈 대화가 없습니다. 이런 질문부터 시작해 보세요.")
+        cols = st.columns(len(SUGGESTED))
+        for i, (col, q) in enumerate(zip(cols, SUGGESTED)):
+            if col.button(q, key=f"tab_chip_{i}", use_container_width=True):
+                with st.spinner("..."):
+                    session.ask(q)
+                st.rerun()
     for q, a in session.transcript:
         st.chat_message("user").write(_esc(q))
         st.chat_message("assistant").write(_esc(a))
