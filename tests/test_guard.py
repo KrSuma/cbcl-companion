@@ -48,3 +48,13 @@ def test_echo_allowance_matches_topic_not_exact_string():
     assert _is_echo("정신과에", "병원 가야 해요? 소아정신과요?")
     assert _is_echo("ADHD", "주의집중이 95%면 adhd 아니에요?")
     assert not _is_echo("약물", "준임상이 무슨 뜻이에요?")
+
+
+def test_glossary_wraps_terms_longest_first_and_skips_html():
+    from cbcl_companion.glossary import wrap_terms
+    out = wrap_terms("내재화 문제가 T=61로 준임상 범위(60–62T)에 해당")
+    assert out.count('class="kt"') == 2                      # 내재화, 준임상 범위
+    assert 'data-tip="' in out and ">준임상 범위</span>" in out
+    assert "준임상</span> 범위" not in out                   # longest match won
+    out = wrap_terms('<span data-x="위축">A</span> 위축')
+    assert out.count('class="kt"') == 1                      # attribute text untouched, content wrapped

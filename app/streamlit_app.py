@@ -13,24 +13,31 @@ from cbcl_companion.chat import ChatSession, render_handoff
 from cbcl_companion.explain import generate_guide, render_markdown
 from cbcl_companion.llm import LLM, Settings
 from cbcl_companion.parser import load_report
+from cbcl_companion.glossary import TOOLTIP_CSS, wrap_terms
 from cbcl_companion.rules import build_facts, composite_band, syndrome_band
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
+def _md(text: str) -> None:
+    """Markdown with glossary terms made hoverable."""
+    st.markdown(wrap_terms(text), unsafe_allow_html=True)
+
+
 def render_original_report(report, pdf_path):
     """The report as the parent receives it, in the report's own order and wording."""
     c, n = report.child, report.narrative
-    st.markdown("<p style='letter-spacing:.2em;color:gray;font-size:.8em;margin-bottom:0'>K-CBCL · KOREAN CHILD BEHAVIOR CHECKLIST</p>", unsafe_allow_html=True)
-    st.markdown("### 한국 아동 · 청소년 행동평가척도 검사 결과 보고서")
+    st.markdown(TOOLTIP_CSS, unsafe_allow_html=True)
+    _md("<p style='letter-spacing:.2em;color:gray;font-size:.8em;margin-bottom:0'>K-CBCL · KOREAN CHILD BEHAVIOR CHECKLIST</p>")
+    _md("### 한국 아동 · 청소년 행동평가척도 검사 결과 보고서")
     st.caption("보호자 보고형 · 만 4~17세 대상 · 한국판 표준화 규준 적용")
-    st.markdown(
+    _md(
         f"| 이름 | 성별 / 연령 | 적용 규준 | 검사일 |\n|---|---|---|---|\n"
         f"| {c.name} | {c.sex}아 / {c.age_label} | {c.norm_group} | {c.test_date.replace('-', '.')} |"
     )
-    st.markdown("##### 검사 개요 및 해석 기준")
-    st.markdown("K-CBCL은 한국판으로 표준화된 행동평가 도구로, 주 양육자가 보고한 아동·청소년의 **사회능력**과 **문제행동 증후군**을 또래 규준과 비교해 평가합니다. 각 척도는 연령·성별 규준에 따라 T점수(평균 50, 표준편차 10)로 환산됩니다.")
-    st.markdown(
+    _md("##### 검사 개요 및 해석 기준")
+    _md("K-CBCL은 한국판으로 표준화된 행동평가 도구로, 주 양육자가 보고한 아동·청소년의 **사회능력**과 **문제행동 증후군**을 또래 규준과 비교해 평가합니다. 각 척도는 연령·성별 규준에 따라 T점수(평균 50, 표준편차 10)로 환산됩니다.")
+    _md(
         "| 범위 | 내재화 · 외현화 · 총 문제행동 | 개별 증후군 척도 | 해석 |\n|---|---|---|---|\n"
         "| 정상 범위 | T < 60 (≤ 84%tile) | T < 60 (≤ 84%tile) | 연령 평균 수준 |\n"
         "| 준임상 범위 | T 60–62 (85–89%tile) | T 60–69 (85–97%tile) | 상승, 선별·관찰 요망 |\n"
@@ -38,56 +45,56 @@ def render_original_report(report, pdf_path):
     )
     st.caption("※ K-CBCL 표준 해석 기준. 종합척도는 63T(90%tile), 개별 증후군 척도는 70T(98%tile)를 임상 기준으로 한다.")
 
-    st.markdown("##### Ⅰ. 사회능력 척도")
+    _md("##### Ⅰ. 사회능력 척도")
     if n and n.social_competence_note:
         st.info(n.social_competence_note)
     else:
-        st.markdown("미실시" if "사회능력 척도" in report.not_administered else "—")
+        _md("미실시" if "사회능력 척도" in report.not_administered else "—")
 
-    st.markdown("##### Ⅱ. 문제행동 종합 지표")
+    _md("##### Ⅱ. 문제행동 종합 지표")
     cols = st.columns(len(report.composites))
     for col, x in zip(cols, report.composites):
         with col:
-            st.markdown(f"**{x.label}**  \n<span style='color:gray;font-size:.85em'>{x.components}</span>", unsafe_allow_html=True)
-            st.markdown(f"<span style='font-size:2em;font-weight:600'>{x.t}</span> <span style='color:gray'>T</span> &nbsp; `{composite_band(x.t)} 범위`", unsafe_allow_html=True)
+            _md(f"**{x.label}**  \n<span style='color:gray;font-size:.85em'>{x.components}</span>")
+            _md(f"<span style='font-size:2em;font-weight:600'>{x.t}</span> <span style='color:gray'>T</span> &nbsp; {composite_band(x.t)} 범위")
     if n and n.composite_summary:
-        st.markdown(n.composite_summary)
+        _md(n.composite_summary)
 
-    st.markdown("##### Ⅲ. 증후군 척도 프로파일")
+    _md("##### Ⅲ. 증후군 척도 프로파일")
     rows = "\n".join(f"| {x.group} 증후군 | {x.label} | {x.items}문항 | {x.t} | {syndrome_band(x.t)} |" for x in report.syndromes)
-    st.markdown("| 군 | 척도 | 문항 수 | T | 범위 |\n|---|---|---|---|---|\n" + rows)
+    _md("| 군 | 척도 | 문항 수 | T | 범위 |\n|---|---|---|---|---|\n" + rows)
     st.caption("준임상 기준(60T) · 임상 기준(70T)")
 
     if n and n.special_scales:
-        st.markdown("##### Ⅳ. 특수 척도 (SPECIAL SCALES)")
+        _md("##### Ⅳ. 특수 척도 (SPECIAL SCALES)")
         for line in n.special_scales:
-            st.markdown(line)
+            _md(line)
 
     if n and n.observations:
-        st.markdown("##### Ⅴ. 주요 관찰 소견")
+        _md("##### Ⅴ. 주요 관찰 소견")
         for o in n.observations:
-            st.markdown(f"**{o.title}** &nbsp;<span style='color:#b45309;font-size:.85em'>{o.tag}</span>", unsafe_allow_html=True)
+            _md(f"**{o.title}** &nbsp;<span style='color:#b45309;font-size:.85em'>{o.tag}</span>")
             for pt in o.points:
-                st.markdown(f"- {pt}")
+                _md(f"- {pt}")
 
     if n and n.interpretation:
-        st.markdown("##### Ⅵ. 종합 해석")
+        _md("##### Ⅵ. 종합 해석")
         for para in n.interpretation:
-            st.markdown(para)
+            _md(para)
 
     if report.parent_comments:
-        st.markdown("##### Ⅶ. 보호자 참고 의견")
+        _md("##### Ⅶ. 보호자 참고 의견")
         for q in report.parent_comments:
-            st.markdown(f"> *{q}*")
+            _md(f"> *{q}*")
 
     if n and n.caveats:
-        st.markdown("##### 해석 시 유의사항")
+        _md("##### 해석 시 유의사항")
         for cv in n.caveats:
-            st.markdown(f"- {cv}")
+            _md(f"- {cv}")
 
     st.caption(f"K-CBCL 한국 아동·청소년 행동평가척도 검사 결과 보고서 · 검사일 {c.test_date.replace('-', '.')} · 규준: {c.norm_group}")
     if pdf_path and hasattr(st, "pdf"):
-        st.markdown("##### 원본 PDF")
+        _md("##### 원본 PDF")
         st.pdf(str(pdf_path))
 
 
