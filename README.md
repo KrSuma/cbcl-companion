@@ -53,7 +53,7 @@ cbcl chat --ask "준임상이 무슨 뜻이에요?" --ask "주의집중이 95%�
 cbcl --report path/to/report.pdf explain   # PDF 입력 (제공된 보고서 템플릿 기준)
 cbcl eval --model claude-haiku-5-5   # 26케이스 가드레일 평가, 모델 교체 비교
 streamlit run app/streamlit_app.py   # 데모 UI: 원본 보고서 → 쉬운 말 해설 → 상담 전 질문 챗봇 → 내부 공유용
-pytest                               # 단위 테스트 10개 (API 불필요)
+pytest                               # 단위 테스트 12개 (API 불필요)
 ```
 
 Heroku 배포: `Procfile`, `.python-version`, `requirements.txt` 포함. `heroku config:set ANTHROPIC_API_KEY=... APP_PASSWORD=... -a <app> && git push heroku main`.
