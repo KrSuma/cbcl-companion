@@ -10,7 +10,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import streamlit as st
 
 from cbcl_companion.chat import ChatSession, render_handoff
-from cbcl_companion.explain import generate_guide, render_markdown, template_guide
+from cbcl_companion.explain import generate_guide, render_markdown
 from cbcl_companion.llm import LLM, Settings
 from cbcl_companion.parser import load_report
 from cbcl_companion.rules import build_facts, composite_band, syndrome_band
@@ -77,14 +77,6 @@ with st.sidebar:
             report = None
     else:
         report = load_report(ROOT / "data" / "sample_report.json")
-    st.divider()
-    st.header("모델")
-    settings = Settings()
-    settings.model_explain = st.text_input("해설 모델", settings.model_explain)
-    settings.model_chat = st.text_input("대화 모델", settings.model_chat)
-    settings.model_judge = st.text_input("검수 모델", settings.model_judge)
-    use_judge = st.checkbox("LLM 검수 사용", value=True)
-    offline = st.checkbox("API 없이 템플릿만 (오프라인)", value=False)
 
 if report is None:
     st.info("왼쪽에서 보고서를 선택하세요.")
@@ -92,9 +84,8 @@ if report is None:
 
 facts = build_facts(report)
 if "llm" not in st.session_state:
-    st.session_state.llm = LLM(settings)
+    st.session_state.llm = LLM(Settings())
 llm: LLM = st.session_state.llm
-llm.settings = settings
 
 tab_r, tab_a, tab_b, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용"])
 
@@ -105,10 +96,7 @@ with tab_a:
     st.subheader(f"{facts.child_name} · {facts.child_sex} · {facts.child_age} · 검사일 {facts.test_date}")
     if st.button("해설 생성", type="primary"):
         with st.spinner("생성 중..."):
-            if offline:
-                guide, report_g, source = template_guide(facts), None, "template"
-            else:
-                guide, report_g, source = generate_guide(facts, llm, use_judge=use_judge)
+            guide, report_g, source = generate_guide(facts, llm)
         st.session_state.guide = (guide, report_g, source)
     if "guide" in st.session_state:
         guide, report_g, source = st.session_state.guide
