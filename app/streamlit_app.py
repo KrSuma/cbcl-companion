@@ -36,7 +36,7 @@ def render_original_report(report, pdf_path):
         f"| {c.name} | {c.sex}아 / {c.age_label} | {c.norm_group} | {c.test_date.replace('-', '.')} |"
     )
     _md("##### 검사 개요 및 해석 기준")
-    _md("K-CBCL은 한국판으로 표준화된 행동평가 도구로, 주 양육자가 보고한 아동·청소년의 **사회능력**과 **문제행동 증후군**을 또래 규준과 비교해 평가합니다. 각 척도는 연령·성별 규준에 따라 T점수(평균 50, 표준편차 10)로 환산됩니다.")
+    _md("K-CBCL은 한국판으로 표준화된 행동평가 도구로, 주 양육자가 보고한 아동·청소년의 <b>사회능력</b>과 <b>문제행동 증후군</b>을 또래 규준과 비교해 평가합니다. 각 척도는 연령·성별 규준에 따라 T점수(평균 50, 표준편차 10)로 환산됩니다.")
     _md(
         "| 범위 | 내재화 · 외현화 · 총 문제행동 | 개별 증후군 척도 | 해석 |\n|---|---|---|---|\n"
         "| 정상 범위 | T < 60 (≤ 84%tile) | T < 60 (≤ 84%tile) | 연령 평균 수준 |\n"
@@ -55,7 +55,7 @@ def render_original_report(report, pdf_path):
     cols = st.columns(len(report.composites))
     for col, x in zip(cols, report.composites):
         with col:
-            _md(f"**{x.label}**  \n<span style='color:gray;font-size:.85em'>{x.components}</span>")
+            _md(f"<b>{x.label}</b>  \n<span style='color:gray;font-size:.85em'>{x.components}</span>")
             _md(f"<span style='font-size:2em;font-weight:600'>{x.t}</span> <span style='color:gray'>T</span> &nbsp; {composite_band(x.t)} 범위")
     if n and n.composite_summary:
         _md(n.composite_summary)
@@ -73,7 +73,7 @@ def render_original_report(report, pdf_path):
     if n and n.observations:
         _md("##### Ⅴ. 주요 관찰 소견")
         for o in n.observations:
-            _md(f"**{o.title}** &nbsp;<span style='color:#b45309;font-size:.85em'>{o.tag}</span>")
+            _md(f"<b>{o.title}</b> &nbsp;<span style='color:#b45309;font-size:.85em'>{o.tag}</span>")
             for pt in o.points:
                 _md(f"- {pt}")
 
@@ -164,10 +164,17 @@ SUGGESTED = ["준임상이 무슨 뜻이에요?", "상담 전까지 집에서 �
 def anxiety_rating(session: ChatSession, when: str, prompt: str) -> None:
     """One-question self-rating (1~5). Stored on the session and shown in the counselor memo."""
     st.markdown("---")
-    choice = st.radio(prompt, [1, 2, 3, 4, 5], index=None, horizontal=True, key=f"rating_{when}",
-                      captions=["거의 없음", "", "", "", "매우 큼"])
+    st.markdown(f"**{prompt}**")
+    choice = st.segmented_control("걱정 정도", options=[1, 2, 3, 4, 5], default=None,
+                                  key=f"rating_{when}", label_visibility="collapsed")
+    st.caption("1 = 거의 없음 · 5 = 매우 큼")
     if choice is not None:
         session.ratings[when] = int(choice)
+
+
+def _esc(text: str) -> str:
+    """Escape tildes so '60~62' is not read as strikethrough."""
+    return text.replace("~", "\\~")
 
 
 def floating_chat(session: ChatSession) -> None:
@@ -185,8 +192,8 @@ def floating_chat(session: ChatSession) -> None:
                             session.ask(q)
                         st.rerun()
             for q, a in recent:
-                st.markdown(f"**보호자:** {q}")
-                st.markdown(f"**도우미:** {a}")
+                st.markdown(f"**보호자:** {_esc(q)}")
+                st.markdown(f"**도우미:** {_esc(a)}")
             with st.form("fab_form", clear_on_submit=True, border=False):
                 q = st.text_input("질문", placeholder="궁금한 점을 적어 주세요", label_visibility="collapsed")
                 sent = st.form_submit_button("보내기", use_container_width=True)
@@ -219,14 +226,14 @@ with tab_a:
 
 with tab_b:
     for q, a in session.transcript:
-        st.chat_message("user").write(q)
-        st.chat_message("assistant").write(a)
+        st.chat_message("user").write(_esc(q))
+        st.chat_message("assistant").write(_esc(a))
     q = st.chat_input("궁금한 점을 물어보세요 (예: 준임상이 무슨 뜻이에요?)")
     if q:
         st.chat_message("user").write(q)
         with st.spinner("..."):
             turn = session.ask(q)
-        st.chat_message("assistant").write(turn.reply)
+        st.chat_message("assistant").write(_esc(turn.reply))
         st.caption(f"{turn.category} · 불안 {turn.anxiety_level} · 상담사 전달 {'예' if turn.log_for_counselor else '아니오'}")
 
 with tab_i:

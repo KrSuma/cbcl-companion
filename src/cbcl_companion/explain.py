@@ -104,4 +104,5 @@ def render_markdown(guide: ParentGuide, facts: Facts) -> str:
     out.append("### 상담 전에 해 보시면 좋은 것\n\n" + "\n".join(f"- {b}" for b in guide.before_consultation) + "\n")
     out.append("### 상담사 선생님께 물어보면 좋은 질문\n\n" + "\n".join(f"{i}. {q}" for i, q in enumerate(guide.questions_for_counselor, 1)) + "\n")
     out.append(f"---\n*{guide.closing}*")
-    return "\n".join(out)
+    # "60~62점" would render as strikethrough in markdown; escape tildes.
+    return "\n".join(out).replace("~", "\\~")
