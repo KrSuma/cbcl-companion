@@ -115,7 +115,6 @@ class ChatSession:
             report_summary=facts_summary_line(f),
             entries=list(self.entries),
             themes=themes,
-            not_administered_mentioned=any("미실시" in r or "실시되지 않" in r for _, r in self.transcript),
             anxiety_before=self.ratings.get("before"),
             anxiety_after=self.ratings.get("after"),
         )
@@ -141,5 +140,4 @@ def render_handoff(note: HandoffNote) -> str:
             lines.append(f"     메모: {e.note}")
     if note.themes:
         lines.append("보호자 관심사: " + ", ".join(note.themes))
-    lines.append(f"미실시 척도 안내 여부: {'안내함' if note.not_administered_mentioned else '안내 안 함'}")
     return "\n".join(lines)

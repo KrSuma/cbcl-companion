@@ -71,7 +71,6 @@ def template_guide(facts: Facts) -> ParentGuide:
         ],
         flagged_scales=flagged,
         normal_scales_note=", ".join(s.label for s in facts.syndromes_normal) + ".",
-        not_administered_note=("이번에 실시되지 않은 검사: " + ", ".join(facts.not_administered) + ". 결과가 나빠서 빠진 것이 아니라 아직 검사하지 않은 것입니다.") if facts.not_administered else "",
         before_consultation=[
             "학교나 기관에서 들었던 이야기를 구체적으로 메모해 두세요 (언제, 어떤 상황에서).",
             "최근에 아이가 걱정하거나 긴장했던 장면을 떠올려 보세요.",
@@ -99,8 +98,6 @@ def render_markdown(guide: ParentGuide, facts: Facts) -> str:
         for i, s in enumerate(guide.flagged_scales, 1):
             out.append(f"**{i}. {s.label} (T={s.t}, {s.band})**\n{s.explanation}\n")
     out.append(f"**또래와 비슷하게 나온 영역:** {guide.normal_scales_note}\n")
-    if guide.not_administered_note:
-        out.append(f"### 이번 보고서에 빠진 것\n\n{guide.not_administered_note}\n")
     out.append("### 상담 전에 해 보시면 좋은 것\n\n" + "\n".join(f"- {b}" for b in guide.before_consultation) + "\n")
     out.append("### 상담사 선생님께 물어보면 좋은 질문\n\n" + "\n".join(f"{i}. {q}" for i, q in enumerate(guide.questions_for_counselor, 1)) + "\n")
     out.append(f"---\n*{guide.closing}*")
