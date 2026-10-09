@@ -1,5 +1,7 @@
 # CBCL Companion — 검사 결과 안내 도우미 (PoC)
 
+공개 저장소: https://github.com/KrSuma/cbcl-companion
+
 아맘때 서비스의 K-CBCL 결과 보고서를 받은 보호자가 **상담사 전화 상담 전까지** 겪는
 "용어를 모르겠다 → 심각한 건가 → 불안" 구간을 줄이기 위한 AI 솔루션의 PoC입니다.
 
