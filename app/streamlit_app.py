@@ -21,7 +21,6 @@ ROOT = Path(__file__).resolve().parents[1]
 def render_original_report(report, pdf_path):
     """The report as the parent receives it today: scores, bands and clinical terms, untouched."""
     c = report.child
-    st.caption("보호자가 지금 받는 보고서. AI가 손대지 않은 입력 그대로입니다.")
     st.markdown("#### 한국 아동 · 청소년 행동평가척도(K-CBCL) 검사 결과 보고서")
     st.markdown(
         f"| 이름 | 성별 / 연령 | 적용 규준 | 검사일 |\n|---|---|---|---|\n"
@@ -61,7 +60,6 @@ if _required:
             st.error("비밀번호가 올바르지 않습니다.")
         st.stop()
 st.title("검사 결과 안내 도우미 (PoC)")
-st.caption("보고서를 대체하지 않습니다. 보고서를 읽는 데 도움을 주고, 상담 전 궁금한 점을 정리해 드립니다.")
 
 with st.sidebar:
     st.header("입력")
@@ -98,7 +96,7 @@ if "llm" not in st.session_state:
 llm: LLM = st.session_state.llm
 llm.settings = settings
 
-tab_r, tab_a, tab_b, tab_i, tab_f = st.tabs(["원본 보고서", "쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용", "규칙 계층 facts"])
+tab_r, tab_a, tab_b, tab_i = st.tabs(["원본 보고서", "쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용"])
 
 with tab_r:
     render_original_report(report, uploaded_pdf)
@@ -142,7 +140,5 @@ with tab_i:
     st.code(render_handoff(session.handoff_note()))
     st.subheader("사용량/비용")
     st.code(llm.tracker.table())
-
-with tab_f:
-    st.caption("LLM이 받는 유일한 입력. 숫자와 범위는 모두 여기서 결정됩니다.")
-    st.json(facts.model_dump())
+    with st.expander("LLM 입력 facts (검증용) — 모델이 받는 유일한 입력. 숫자와 범위는 모두 규칙 계층이 결정"):
+        st.json(facts.model_dump())
