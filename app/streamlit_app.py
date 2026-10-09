@@ -13,9 +13,38 @@ from cbcl_companion.chat import ChatSession, render_handoff
 from cbcl_companion.explain import generate_guide, render_markdown, template_guide
 from cbcl_companion.llm import LLM, Settings
 from cbcl_companion.parser import load_report
-from cbcl_companion.rules import build_facts
+from cbcl_companion.rules import build_facts, composite_band, syndrome_band
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def render_original_report(report, pdf_path):
+    """The report as the parent receives it today: scores, bands and clinical terms, untouched."""
+    c = report.child
+    st.caption("보호자가 지금 받는 보고서. AI가 손대지 않은 입력 그대로입니다.")
+    st.markdown("#### 한국 아동 · 청소년 행동평가척도(K-CBCL) 검사 결과 보고서")
+    st.markdown(
+        f"| 이름 | 성별 / 연령 | 적용 규준 | 검사일 |\n|---|---|---|---|\n"
+        f"| {c.name} | {c.sex} / {c.age_label} | {c.norm_group} | {c.test_date} |"
+    )
+    st.markdown("**해석 기준** · 종합척도: T<60 정상, 60–62 준임상, ≥63 임상 · 개별 증후군 척도: T<60 정상, 60–69 준임상, ≥70 임상 (임상적 개입 고려)")
+    st.markdown("##### Ⅱ. 문제행동 종합 지표")
+    rows = "\n".join(f"| {x.label} | {x.components} | {x.t} T | {composite_band(x.t)} 범위 |" for x in report.composites)
+    st.markdown("| 척도 | 구성 | T점수 | 범위 |\n|---|---|---|---|\n" + rows)
+    st.markdown("##### Ⅲ. 증후군 척도 프로파일")
+    rows = "\n".join(f"| {x.group} | {x.label} | {x.items}문항 | {x.t} | {syndrome_band(x.t)} |" for x in report.syndromes)
+    st.markdown("| 군 | 척도 | 문항 | T점수 | 범위 |\n|---|---|---|---|---|\n" + rows)
+    if report.not_administered:
+        st.markdown("##### Ⅰ·Ⅳ. 미실시 척도")
+        st.markdown("미실시 · " + ", ".join(report.not_administered))
+    if report.parent_comments:
+        st.markdown("##### Ⅶ. 보호자 참고 의견")
+        for q in report.parent_comments:
+            st.markdown(f"> {q}")
+    if pdf_path and hasattr(st, "pdf"):
+        st.markdown("##### 원본 PDF")
+        st.pdf(str(pdf_path))
+
 
 st.set_page_config(page_title="아맘때 검사 결과 안내 도우미", page_icon="🧩", layout="wide")
 
@@ -37,6 +66,7 @@ st.caption("보고서를 대체하지 않습니다. 보고서를 읽는 데 도�
 with st.sidebar:
     st.header("입력")
     src = st.radio("보고서", ["샘플 JSON", "PDF 업로드"])
+    uploaded_pdf = None
     if src == "PDF 업로드":
         up = st.file_uploader("K-CBCL 보고서 PDF", type=["pdf"])
         if up:
@@ -44,6 +74,7 @@ with st.sidebar:
             p.parent.mkdir(exist_ok=True)
             p.write_bytes(up.read())
             report = load_report(p)
+            uploaded_pdf = p
         else:
             report = None
     else:
@@ -67,7 +98,10 @@ if "llm" not in st.session_state:
 llm: LLM = st.session_state.llm
 llm.settings = settings
 
-tab_a, tab_b, tab_i, tab_f = st.tabs(["쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용", "규칙 계층 facts"])
+tab_r, tab_a, tab_b, tab_i, tab_f = st.tabs(["원본 보고서", "쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용", "규칙 계층 facts"])
+
+with tab_r:
+    render_original_report(report, uploaded_pdf)
 
 with tab_a:
     st.subheader(f"{facts.child_name} · {facts.child_sex} · {facts.child_age} · 검사일 {facts.test_date}")
