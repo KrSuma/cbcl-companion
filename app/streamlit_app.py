@@ -1,6 +1,7 @@
 """Streamlit demo: parent guide (Feature A) + pre-consultation Q&A (Feature B)."""
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -17,6 +18,19 @@ from cbcl_companion.rules import build_facts
 ROOT = Path(__file__).resolve().parents[1]
 
 st.set_page_config(page_title="아맘때 검사 결과 안내 도우미", page_icon="🧩", layout="wide")
+
+# Optional access gate for public deployments: set APP_PASSWORD to require it.
+_required = os.getenv("APP_PASSWORD")
+if _required:
+    if not st.session_state.get("authed"):
+        st.title("검사 결과 안내 도우미 (PoC)")
+        pw = st.text_input("접근 비밀번호", type="password")
+        if pw and pw == _required:
+            st.session_state.authed = True
+            st.rerun()
+        elif pw:
+            st.error("비밀번호가 올바르지 않습니다.")
+        st.stop()
 st.title("검사 결과 안내 도우미 (PoC)")
 st.caption("보고서를 대체하지 않습니다. 보고서를 읽는 데 도움을 주고, 상담 전 궁금한 점을 정리해 드립니다.")
 
