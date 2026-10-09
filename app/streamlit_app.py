@@ -147,10 +147,13 @@ session: ChatSession = st.session_state.session
 
 FAB_CSS = """
 <style>
-.st-key-chat_fab{position:fixed;bottom:28px;right:28px;z-index:1000}
-.st-key-chat_fab button[data-testid="stPopoverButton"]{border-radius:999px;padding:.6em 1.1em;
-  box-shadow:0 6px 18px rgba(0,0,0,.25);background:#1f2937;color:#fff;border:none;font-weight:600}
-.st-key-chat_fab button[data-testid="stPopoverButton"]:hover{background:#111827;color:#fff}
+div[class*="st-key-chat_fab"]{position:fixed !important;bottom:28px !important;right:28px !important;
+  left:auto !important;top:auto !important;width:auto !important;z-index:1000 !important}
+div[class*="st-key-chat_fab"] [data-testid="stPopover"]{width:auto !important}
+div[class*="st-key-chat_fab"] button{border-radius:999px !important;padding:.65em 1.2em !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.3) !important;background:#1f2937 !important;color:#fff !important;
+  border:none !important;font-weight:600 !important}
+div[class*="st-key-chat_fab"] button:hover{background:#111827 !important;color:#fff !important}
 </style>
 """
 
