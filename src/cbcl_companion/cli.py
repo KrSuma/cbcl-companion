@@ -36,6 +36,7 @@ def cmd_explain(args):
     md = render_markdown(guide, facts)
     print(md)
     if args.out:
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(md, encoding="utf-8")
         Path(args.out).with_suffix(".json").write_text(guide.model_dump_json(indent=2), encoding="utf-8")
     print("\n" + report.summary(), file=sys.stderr)
