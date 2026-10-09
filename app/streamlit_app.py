@@ -67,7 +67,7 @@ if "llm" not in st.session_state:
 llm: LLM = st.session_state.llm
 llm.settings = settings
 
-tab_a, tab_b, tab_f = st.tabs(["쉬운 말 해설", "상담 전 질문 도우미", "규칙 계층 facts"])
+tab_a, tab_b, tab_i, tab_f = st.tabs(["쉬운 말 해설", "상담 전 질문 챗봇", "내부 공유용", "규칙 계층 facts"])
 
 with tab_a:
     st.subheader(f"{facts.child_name} · {facts.child_sex} · {facts.child_age} · 검사일 {facts.test_date}")
@@ -100,10 +100,14 @@ with tab_b:
             turn = session.ask(q)
         st.chat_message("assistant").write(turn.reply)
         st.caption(f"{turn.category} · 불안 {turn.anxiety_level} · 상담사 전달 {'예' if turn.log_for_counselor else '아니오'}")
-    with st.expander("상담사 전달 메모 (자동 생성)"):
-        st.code(render_handoff(session.handoff_note()))
-    with st.expander("사용량/비용"):
-        st.code(llm.tracker.table())
+
+with tab_i:
+    st.caption("보호자에게는 보이지 않는 화면. 상담사와 운영팀이 봅니다.")
+    st.subheader("상담사 전달 메모 (자동 생성)")
+    session: ChatSession = st.session_state.get("session") or ChatSession(facts, llm)
+    st.code(render_handoff(session.handoff_note()))
+    st.subheader("사용량/비용")
+    st.code(llm.tracker.table())
 
 with tab_f:
     st.caption("LLM이 받는 유일한 입력. 숫자와 범위는 모두 여기서 결정됩니다.")
