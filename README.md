@@ -1,6 +1,7 @@
 # CBCL Companion — 검사 결과 안내 도우미 (PoC)
 
 공개 저장소: https://github.com/KrSuma/cbcl-companion
+라이브 데모: https://cbcl-companion-3c7a7e121cbb.herokuapp.com (접근 비밀번호는 제출 메일에 기재. Eco dyno라 첫 접속 시 수 초 대기)
 
 아맘때 서비스의 K-CBCL 결과 보고서를 받은 보호자가 **상담사 전화 상담 전까지** 겪는
 "용어를 모르겠다 → 심각한 건가 → 불안" 구간을 줄이기 위한 AI 솔루션의 PoC입니다.
@@ -96,8 +97,11 @@ cbcl eval
 cbcl eval --model claude-sonnet-5-5
 cbcl eval --model claude-haiku-5-5
 
-# 8. 데모 UI
+# 8. 데모 UI (로컬)
 streamlit run app/streamlit_app.py
+
+# 9. Heroku 배포 (Procfile, .python-version, requirements.txt 포함)
+heroku create <app> && heroku config:set ANTHROPIC_API_KEY=... APP_PASSWORD=... -a <app> && git push heroku main
 
 # 테스트 (API 불필요)
 pytest
@@ -124,6 +128,7 @@ Anthropic Claude API (Python SDK `anthropic`, Messages API + 구조화 출력 `m
 | `CBCL_MODEL_CHAT` | | `claude-opus-5-5` | 대화 모델 |
 | `CBCL_MODEL_JUDGE` | | `claude-haiku-5-5` | 검수 모델 |
 | `CBCL_EFFORT` | | `medium` | 생성 effort (`low`/`medium`/`high`) |
+| `APP_PASSWORD` | | 없음 | 설정 시 데모 UI에 접근 비밀번호 요구 (공개 배포용) |
 
 ## 비용 (실측)
 
