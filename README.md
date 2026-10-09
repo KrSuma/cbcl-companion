@@ -123,7 +123,7 @@ src/cbcl_companion/
   parser.py, llm.py, cost.py      JSON 로더 + PDF 파서(데모), Anthropic 클라이언트 래퍼, 가격표
   evaluate.py, cli.py             평가 러너, CLI
 app/streamlit_app.py      데모 UI
-data/sample_report.json   샘플 보고서 (점수는 제공된 가상 보고서 그대로, 이름·검사일·보호자 의견은 합성)
+data/sample_report.json   제공된 샘플 보고서(가상 인물)를 PDF 파서로 그대로 옮긴 것
 eval/cases.jsonl, eval/results/   26개 평가 케이스, 모델별 결과 JSON
 tests/                    API 없이 도는 단위 테스트
 ```
